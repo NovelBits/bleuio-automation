@@ -1,0 +1,25 @@
+# Post 8 example: build a programmable peer (a custom GATT service) in AT
+# commands, then discover and read it from the central. Replace <PERIPHERAL_MAC>.
+# GATTCREAD's completion event arrives asynchronously; @until reads until it lands.
+
+[B] AT+CUSTOMSERVICERESET
+[B] AT+CUSTOMSERVICE=0=UUID=ee6ec068-7447-4045-9fd0-593f3ba3c2ee
+[B] AT+CUSTOMSERVICE=1=UUID=018f55d9-d747-4045-9fd0-593f3ba3c2aa
+[B] AT+CUSTOMSERVICE=1=PROP=RN
+[B] AT+CUSTOMSERVICE=1=PERM=R
+[B] AT+CUSTOMSERVICE=1=LEN=20
+[B] AT+CUSTOMSERVICE=1=VALUE=lab temp 21.5
+[B] AT+CUSTOMSERVICE @expect lab temp 21.5
+[B] AT+CUSTOMSERVICESTART
+[B] AT+ADVSTART @expect ADVERTISING
+
+# central connects, discovers, reads (handle 0026 on FW 2.7.9.78 -- confirm via AT+GETSERVICES)
+[A] AT+GAPCONNECT=[0]<PERIPHERAL_MAC> @wait 9 @expect 018f55d9
+[A] AT+GATTCREAD=0026 @wait 6 @until Value read @expect lab temp 21.5
+
+# update the value on the peripheral, read the change on the central
+[B] AT+CUSTOMSERVICE=1=VALUE=lab temp 24.9 @expect OK
+[A] AT+GATTCREAD=0026 @wait 6 @until Value read @expect lab temp 24.9
+
+[A] AT+GAPDISCONNECT @wait 2 @expect DISCONNECTED
+[B] AT+ADVSTOP

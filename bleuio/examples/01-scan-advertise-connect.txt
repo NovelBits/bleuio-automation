@@ -1,0 +1,22 @@
+# Post 1 example: advertise a named peripheral, scan for it, connect, disconnect.
+# Two BleuIO dongles. Replace <PERIPHERAL_MAC> below with dongle B's address:
+#   python3 bleuio.py cmd "AT+GETMAC" --port <B's port>
+# Find your ports with:  python3 bleuio.py find --all
+# [A] = central/scanner, [B] = peripheral/advertiser.
+
+[A] ATI @expect BleuIO
+[B] ATI @expect BleuIO
+
+# B advertises as "SENSOR" (07=len, 09=Complete Local Name, then S E N S O R in hex)
+[B] AT+ADVSTOP
+[B] AT+ADVDATA=07:09:53:45:4E:53:4F:52 @expect OK
+[B] AT+ADVSTART @expect ADVERTISING
+
+# A scans and connects
+[A] AT+CENTRAL
+[A] AT+GAPSCAN=5 @wait 6.5 @expect SCAN COMPLETE
+[A] ATASSN1 @expect Show Scan Name On
+[A] AT+GAPCONNECT=[0]<PERIPHERAL_MAC> @wait 5 @expect CONNECTED
+[A] AT+GETCONN @expect Client
+[A] AT+GAPDISCONNECT @wait 2 @expect DISCONNECTED
+[B] AT+ADVSTOP

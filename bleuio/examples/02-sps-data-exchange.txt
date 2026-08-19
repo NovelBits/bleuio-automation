@@ -1,0 +1,23 @@
+# Post 2 example: exchange data over the Serial Port Service, and reproduce the
+# no-subscriber ERROR on demand. Replace <PERIPHERAL_MAC>. 000D = the SPS TX
+# characteristic value handle on firmware 2.7.9.78 (confirm with AT+GETSERVICES).
+
+[B] AT+ADVSTART @expect ADVERTISING
+[A] AT+GAPCONNECT=[0]<PERIPHERAL_MAC> @wait 5 @expect CONNECTED
+
+# The BleuIO central auto-subscribes to SPS TX during discovery, so this works:
+[A] AT+NOTI @expect 000D
+[B] AT+SPSSEND=hello from the peripheral @expect Sent
+[A] @read 1.5 @expect hello from the peripheral
+
+# Unsubscribe -> the peripheral's next send has no subscriber -> ERROR (by design)
+[A] AT+CLEARNOTI=000D @expect 000e
+[B] AT+SPSSEND=anyone listening? @expect ERROR
+
+# Resubscribe -> it works again
+[A] AT+SETNOTI=000D
+[B] AT+SPSSEND=back online @expect Sent
+[A] @read 1.5 @expect back online
+
+[A] AT+GAPDISCONNECT @wait 2 @expect DISCONNECTED
+[B] AT+ADVSTOP

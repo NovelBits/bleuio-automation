@@ -1,0 +1,32 @@
+# Posts 4 & 7 example: pair with bonding, reconnect on the bond, then reset both
+# sides to a verified-clean state. Replace <PERIPHERAL_MAC>.
+# Lesson from the field: a clean bond list is NOT proof of a healthy GATT client.
+# Verify readiness by performing a real GATT operation, and keep ATR in your
+# recovery path if a read fails while bonds look clean.
+
+# clean slate on BOTH sides
+[A] AT+GAPUNPAIR
+[B] AT+GAPUNPAIR
+[A] AT+GETBOND @expect No Bonded
+[B] AT+GETBOND @expect No Bonded
+
+# connect, pair with bonding, verify
+[B] AT+ADVSTART @expect ADVERTISING
+[A] AT+CENTRAL
+[A] AT+GAPCONNECT=[0]<PERIPHERAL_MAC> @wait 5 @expect CONNECTED
+[A] AT+GAPPAIR=BOND @wait 5 @expect BONDING SUCCESS
+[A] AT+GETCONN @expect bonded=true
+[A] AT+GAPDISCONNECT @wait 2 @expect DISCONNECTED
+
+# reconnect on the stored bond (no re-pairing) and confirm
+[B] AT+ADVSTART @expect ADVERTISING
+[A] AT+GAPCONNECT=[0]<PERIPHERAL_MAC> @wait 5 @expect CONNECTED
+[A] AT+GETCONN @expect bonded=true
+[A] AT+GAPDISCONNECT @wait 2 @expect DISCONNECTED
+
+# reset, verified on both sides
+[A] AT+GAPUNPAIR
+[B] AT+GAPUNPAIR
+[A] AT+GETBOND @expect No Bonded
+[B] AT+GETBOND @expect No Bonded
+[B] AT+ADVSTOP
