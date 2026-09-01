@@ -72,6 +72,46 @@ def read_response(port, wait, until=None):
     return b"".join(chunks).decode("utf-8", "replace")
 
 
+PLACEHOLDER = re.compile(r"\{\{([A-Za-z_][A-Za-z0-9_]*)\}\}")
+
+
+def parse_sets(pairs):
+    """['CI=24', 'MAC=AA:BB'] -> {'CI': '24', 'MAC': 'AA:BB'}.
+
+    Only the FIRST '=' separates, because AT syntax uses '=' inside values
+    (e.g. --set P=intv_min=30)."""
+    out = {}
+    for p in pairs or []:
+        key, sep, val = p.partition("=")
+        if not sep or not key:
+            raise ValueError(f"--set expects KEY=VALUE, got: {p!r}")
+        out[key] = val
+    return out
+
+
+def substitute(text, values):
+    """Replace every {{KEY}} in `text` from `values`.
+
+    Raises if a placeholder has no value, or if a value is never used. Both are
+    silent failures otherwise: an unsubstituted {{CI}} would be sent to the dongle
+    literally, and a typo'd key would sweep the same value N times while looking
+    like it worked."""
+    used = set()
+
+    def repl(m):
+        key = m.group(1)
+        if key not in values:
+            raise ValueError(f"{{{{{key}}}}} in the script has no --set {key}=VALUE")
+        used.add(key)
+        return values[key]          # a function repl is literal; no backslash escapes
+
+    out = PLACEHOLDER.sub(repl, text)
+    unused = sorted(set(values) - used)
+    if unused:
+        raise ValueError(f"--set given but never used in the script: {', '.join(unused)}")
+    return out
+
+
 def parse_directives(rest):
     """Split 'AT+CMD @wait 6 @until FOO @expect FOO BAR' -> (cmd, {wait, until, expect, expect_not})."""
     d = {"wait": 0.6, "until": None, "expect": [], "expect_not": []}
@@ -98,6 +138,9 @@ def main():
     ap.add_argument("--port-b")
     ap.add_argument("--out", help="JSON transcript path")
     ap.add_argument("--md", help="Markdown render path (terminal blocks per step)")
+    ap.add_argument("--set", action="append", metavar="KEY=VALUE", dest="sets",
+                    help="Substitute {{KEY}} in the script. Repeatable. Sweep by looping "
+                         "outside: for ci in 30 50 100; do ... --set CI=$ci --out cap-ci$ci.json; done")
     a = ap.parse_args()
 
     ports = {"A": serial.Serial(a.port_a, BAUD, timeout=0.2)}
@@ -106,8 +149,14 @@ def main():
     for p in ports.values():
         p.reset_input_buffer()
 
+    try:
+        values = parse_sets(a.sets)
+        script_text = substitute(open(a.script).read(), values)
+    except ValueError as e:
+        sys.exit(f"{a.script}: {e}")
+
     steps, failures = [], 0
-    for lineno, line in enumerate(open(a.script), 1):
+    for lineno, line in enumerate(script_text.splitlines(), 1):
         line = line.strip()
         if not line or line.startswith("#"):
             continue
@@ -155,6 +204,7 @@ def main():
         "captured_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "script": a.script,
         "ports": {k: v for k, v in [("A", a.port_a), ("B", a.port_b)] if v},
+        "sets": values,
         "failures": failures,
         "steps": steps,
     }

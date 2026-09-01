@@ -65,3 +65,32 @@ GATT table (captured on 2.7.9.78). On other firmware, confirm them with `AT+GETS
 
 MIT. See [LICENSE](LICENSE). "BleuIO" is a product of Smart Sensor Devices; other product names
 referenced in code comments belong to their respective owners.
+
+## Sweeping a parameter
+
+`--set KEY=VALUE` substitutes `{{KEY}}` anywhere in a script. It is repeatable, and the values are
+recorded in the JSON transcript so a sweep's captures identify themselves.
+
+```bash
+for ci in 30 50 100 200; do
+  python3 run-session.py examples/06-connection-interval-sweep.txt \
+    --port-a "$A" --port-b "$B" \
+    --set MAC=40:48:FD:EA:E4:88 --set CI=$ci \
+    --out cap-ci${ci}ms.json
+done
+```
+
+The loop stays in your shell rather than in the runner. One run is one transcript, which is the
+granularity you want for comparing timing cases, and it drops into a CI matrix unchanged.
+
+Two things are errors rather than warnings, because both otherwise fail silently: a `{{KEY}}` with no
+`--set`, which would send the literal text to the dongle, and a `--set` the script never uses, which
+would sweep the same value N times while looking like it worked.
+
+**Which side you are on decides what you can sweep.** The central picks the connection interval from
+the range it requests, so a connection-timing sweep has to run from the central. Advertising interval
+is set by whichever side is advertising.
+
+**`AT+CONNPARAM` takes milliseconds** (7.5 to 4000) and is set on the central while disconnected; the
+parameters apply to the next connection. Its readback reports 1.25 ms units instead, so a request of
+30 ms comes back as 24. That asymmetry is the thing people trip over.

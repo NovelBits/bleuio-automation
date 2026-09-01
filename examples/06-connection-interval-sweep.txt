@@ -1,0 +1,33 @@
+# Connection interval sweep. One run per interval, so each capture is comparable.
+#
+#   for ci in 30 50 100 200; do
+#     python3 run-session.py examples/06-connection-interval-sweep.txt \
+#       --port-a "$A" --port-b "$B" \
+#       --set MAC=40:48:FD:EA:E4:88 --set CI=$ci \
+#       --out cap-ci${ci}ms.json
+#   done
+#
+# [A] is the central. This has to run from the central: the central picks the
+# connection interval from the range it requests, so a peripheral-side script
+# cannot drive the sweep.
+#
+# AT+CONNPARAM takes MILLISECONDS (7.5 to 4000). The readback reports 1.25 ms
+# units instead, so a request of 30 ms comes back as 24. Set it on the central
+# while disconnected, then connect: the parameters apply to the next connection.
+#
+# Pattern verified on hardware in the Bluetooth LE Unplugged course
+# (course/scripts/test-connparam-units.py, which is what settled the units
+# question). The bare AT+GAPCONNECT form is used deliberately; the parameterised
+# form is not used anywhere in the course or this series and is unproven here.
+
+@note connection interval sweep, requested CI={{CI}} ms
+[A] AT+GAPDISCONNECTALL @wait 0.8
+[B] AT+GAPDISCONNECTALL @wait 0.8
+[B] AT+ADVSTART @expect ADVERTISING
+[A] AT+CENTRAL
+[A] AT+CONNPARAM={{CI}}={{CI}}=0=1000 @wait 0.8
+[A] AT+CONNPARAM @wait 0.8 @note readback is in 1.25 ms units
+[A] AT+GAPCONNECT=[0]{{MAC}} @wait 4 @expect CONNECTED
+[A] AT+GETCONN @expect Client
+[A] AT+GAPDISCONNECT @wait 2 @expect DISCONNECTED
+[B] AT+ADVSTOP
