@@ -75,7 +75,7 @@ recorded in the JSON transcript so a sweep's captures identify themselves.
 for ci in 30 50 100 200; do
   python3 run-session.py examples/06-connection-interval-sweep.txt \
     --port-a "$A" --port-b "$B" \
-    --set MAC=40:48:FD:EA:E4:88 --set CI=$ci \
+    --set MAC=AA:BB:CC:DD:EE:FF --set CI=$ci \
     --out cap-ci${ci}ms.json
 done
 ```

@@ -22,8 +22,8 @@ class ParseSets(unittest.TestCase):
         self.assertEqual(parse_sets(["CI=24"]), {"CI": "24"})
 
     def test_multiple(self):
-        self.assertEqual(parse_sets(["CI=24", "MAC=40:48:FD:EA:E4:88"]),
-                         {"CI": "24", "MAC": "40:48:FD:EA:E4:88"})
+        self.assertEqual(parse_sets(["CI=24", "MAC=AA:BB:CC:DD:EE:FF"]),
+                         {"CI": "24", "MAC": "AA:BB:CC:DD:EE:FF"})
 
     def test_value_may_contain_equals(self):
         # AT syntax uses '=' inside values, so only the FIRST '=' separates.
@@ -54,8 +54,8 @@ class Substitute(unittest.TestCase):
 
     def test_value_with_colons_is_literal(self):
         # A MAC is not a regex; colons and any other metacharacters must survive.
-        out = substitute("{{MAC}}", {"MAC": "40:48:FD:EA:E4:88"})
-        self.assertEqual(out, "40:48:FD:EA:E4:88")
+        out = substitute("{{MAC}}", {"MAC": "AA:BB:CC:DD:EE:FF"})
+        self.assertEqual(out, "AA:BB:CC:DD:EE:FF")
 
     def test_value_with_backslash_is_literal(self):
         self.assertEqual(substitute("{{V}}", {"V": r"a\1b"}), r"a\1b")
