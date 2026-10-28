@@ -14,7 +14,7 @@ dongle or two, and run the same sequences the posts walk through.
 
 | # | Post | Example script |
 |---|------|----------------|
-| 1 | Testing a Bluetooth LE device without a phone | [`examples/01-scan-advertise-connect.txt`](examples/01-scan-advertise-connect.txt) |
+| 1 | [Testing a Bluetooth LE device without a phone](https://novelbits.io/testing-bluetooth-le-without-a-phone/) | [`examples/01-scan-advertise-connect.txt`](examples/01-scan-advertise-connect.txt) |
 | 2 | A scripted Bluetooth LE test: connect, exchange data, verify | [`examples/02-sps-data-exchange.txt`](examples/02-sps-data-exchange.txt) |
 | 3 | An AI agent just ran my Bluetooth LE test | (uses the runner + example 01) |
 | 4 | CI for Bluetooth LE: a regression rig on every build | [`examples/03-pairing-bonding-reset.txt`](examples/03-pairing-bonding-reset.txt) |
