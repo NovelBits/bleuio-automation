@@ -2,6 +2,20 @@
 # no-subscriber ERROR on demand. Replace <PERIPHERAL_MAC>. 000D = the SPS TX
 # characteristic value handle on firmware 2.7.9.78 (confirm with AT+GETSERVICES).
 
+# Known starting state. A dongle keeps its role, advertising and links between runs,
+# and a peripheral resumes advertising on its own after a disconnect, which makes a
+# later AT+CENTRAL answer ERROR. ERROR on these setup lines just means "nothing to do";
+# the two AT+GAPSTATUS lines are the real check.
+[A] AT+GAPDISCONNECTALL @wait 1
+[B] AT+GAPDISCONNECTALL @wait 1
+@pause 1
+[A] AT+ADVSTOP
+[B] AT+ADVSTOP
+[A] AT+CENTRAL
+[B] AT+PERIPHERAL
+[A] AT+GAPSTATUS @expect Central role @expect Not Connected @expect Not Advertising
+[B] AT+GAPSTATUS @expect Peripheral role @expect Not Connected @expect Not Advertising
+
 [B] AT+ADVSTART @expect ADVERTISING
 [A] AT+GAPCONNECT=[0]<PERIPHERAL_MAC> @wait 5 @expect CONNECTED
 

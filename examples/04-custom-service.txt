@@ -1,6 +1,25 @@
 # Post 8 example: build a programmable peer (a custom GATT service) in AT
 # commands, then discover and read it from the central. Replace <PERIPHERAL_MAC>.
 # GATTCREAD's completion event arrives asynchronously; @until reads until it lands.
+# Before running: reboot both dongles (send ATR to each, then wait about 18 s for the
+# ports to come back). From a fresh boot on FW 2.7.9.78 the custom service sits at 0024 and its
+# value at 0026. Without the reboot, and on older firmware such as 2.5.0, it can land after the
+# Device Information service instead (0031, value 0033), and the reads below return the wrong
+# characteristic. Check the GAPCONNECT discovery output and change 0026 if yours differs.
+
+# Known starting state. A dongle keeps its role, advertising and links between runs,
+# and a peripheral resumes advertising on its own after a disconnect, which makes a
+# later AT+CENTRAL answer ERROR. ERROR on these setup lines just means "nothing to do";
+# the two AT+GAPSTATUS lines are the real check.
+[A] AT+GAPDISCONNECTALL @wait 1
+[B] AT+GAPDISCONNECTALL @wait 1
+@pause 1
+[A] AT+ADVSTOP
+[B] AT+ADVSTOP
+[A] AT+CENTRAL
+[B] AT+PERIPHERAL
+[A] AT+GAPSTATUS @expect Central role @expect Not Connected @expect Not Advertising
+[B] AT+GAPSTATUS @expect Peripheral role @expect Not Connected @expect Not Advertising
 
 [B] AT+CUSTOMSERVICERESET
 [B] AT+CUSTOMSERVICE=0=UUID=ee6ec068-7447-4045-9fd0-593f3ba3c2ee
