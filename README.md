@@ -15,6 +15,7 @@ dongle or two, and run the same sequences the posts walk through.
 | # | Post | Example script |
 |---|------|----------------|
 | 1 | [Testing a Bluetooth LE device without a phone](https://novelbits.io/testing-bluetooth-le-without-a-phone/) | [`examples/01-scan-advertise-connect.txt`](examples/01-scan-advertise-connect.txt) |
+| 2 | [Turn a manual Bluetooth LE test into a Python script](https://novelbits.io/scripted-bluetooth-le-test/) | [`examples/02-sps-data-exchange.txt`](examples/02-sps-data-exchange.txt) |
 
 New posts are added here as they publish.
 
