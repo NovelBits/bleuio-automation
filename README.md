@@ -10,19 +10,13 @@ dongle or two, and run the same sequences the posts walk through.
 
 ## Posts in this series
 
-<!-- Add each post's URL here as it publishes. Keep the order the series is meant to be read. -->
+<!-- Add each post's row only when it publishes. Keep the order the series is meant to be read. -->
 
 | # | Post | Example script |
 |---|------|----------------|
 | 1 | [Testing a Bluetooth LE device without a phone](https://novelbits.io/testing-bluetooth-le-without-a-phone/) | [`examples/01-scan-advertise-connect.txt`](examples/01-scan-advertise-connect.txt) |
-| 2 | A scripted Bluetooth LE test: connect, exchange data, verify | [`examples/02-sps-data-exchange.txt`](examples/02-sps-data-exchange.txt) |
-| 3 | An AI agent just ran my Bluetooth LE test | (uses the runner + example 01) |
-| 4 | CI for Bluetooth LE: a regression rig on every build | [`examples/03-pairing-bonding-reset.txt`](examples/03-pairing-bonding-reset.txt) |
-| 6 | Your Bluetooth LE tests aren't flaky. The stack under them is. | (uses the runner + example 01) |
-| 7 | Resetting Bluetooth LE state between tests | [`examples/03-pairing-bonding-reset.txt`](examples/03-pairing-bonding-reset.txt) |
-| 8 | A programmable peer in a handful of AT commands | [`examples/04-custom-service.txt`](examples/04-custom-service.txt) |
 
-Post links will be filled in as each one publishes.
+New posts are added here as they publish.
 
 ## Requirements
 
